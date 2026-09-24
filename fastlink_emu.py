@@ -3,7 +3,12 @@ from unicorn import *
 from unicorn.arm64_const import *
 from elftools.elf.elffile import ELFFile
 
-SO = '/tmp/tsx/lib/arm64-v8a/libflashsmartencode.so'
+import os
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_CANDS = [os.path.join(_HERE, '..', 'libs', 'arm64-v8a', 'libflashsmartencode.so'),
+          os.path.join(_HERE, 'libs', 'arm64-v8a', 'libflashsmartencode.so'),
+          '/tmp/tsx/lib/arm64-v8a/libflashsmartencode.so']
+SO = next((p for p in _CANDS if os.path.exists(p)), _CANDS[0])
 ENCODER = 0x28a0
 INIT = 0x2700
 SET_PLAT = 0x288c

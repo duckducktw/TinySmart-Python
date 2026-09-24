@@ -2,7 +2,7 @@
 """TinySmart 完整控制模組（Python 重實作）— 2026-09-24
 
 完整鏈路：
-  QR (FTDSF|2|<BASE64>) ─► shareID ─► 分享API ─► 家庭模型(房間/燈具/bleCode)
+  QR (FTDSF|2|b64) ─► shareID ─► 分享API ─► 家庭模型(房間/燈具/bleCode)
   QueryFlashMeshCode API ─► meshKey(16B, AES key)
   ble_fast_link_init(0, 86, bleCode4, meshKey) + set_protocol_platform(2)
   encode(head, data) ─► body24 ─► AD(02 01 02 1b ff e0 ff + body) ─► HCI 擴充廣播
@@ -71,13 +71,27 @@ def fetch_home(share_id: str, member_id: str = "1") -> dict:
             "groups": sd.get("groups", []), "scenes": sd.get("scenes", []), "key4": key4}
 
 
-def fetch_mesh_key() -> bytes:
-    """QueryFlashMeshCode → 16-byte AES key（此端點吃「原始 JSON」body，非 base64）"""
-    out = subprocess.run(["curl", "-s", "-m", "25", "-X", "POST", MESHKEY_API,
-                          "-H", "Content-Type: application/json;charset=utf-8",
-                          "-d", "{}"], capture_output=True, text=True).stdout
-    j = json.loads(out)
-    return bytes.fromhex(j["data"])
+_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'meshkey.txt')
+
+def fetch_mesh_key(use_cache_fallback: bool = True) -> bytes:
+    """QueryFlashMeshCode → 16-byte AES key（此端點吃「原始 JSON」body，非 base64）。
+    成功時寫入 meshkey.txt 快取；失敗時回退用快取。"""
+    try:
+        out = subprocess.run(["curl", "-s", "-m", "25", "-X", "POST", MESHKEY_API,
+                              "-H", "Content-Type: application/json;charset=utf-8",
+                              "-d", "{}"], capture_output=True, text=True).stdout
+        key = json.loads(out)["data"].strip()
+        if len(key) >= 32:
+            try:
+                open(_CACHE, "w").write(key)
+            except Exception:
+                pass
+            return bytes.fromhex(key)
+    except Exception:
+        pass
+    if use_cache_fallback and os.path.exists(_CACHE):
+        return bytes.fromhex(open(_CACHE).read().strip())
+    raise RuntimeError("QueryFlashMeshCode 失敗且無快取")
 
 
 # ───────────────────────────── 編解碼 ─────────────────────────────
