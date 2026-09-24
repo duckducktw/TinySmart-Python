@@ -187,11 +187,23 @@ def cmd_switch_group(group_id: int, ctrl: int, para: int = 0,
 
 
 # ───────────────────────────── 廣播 ─────────────────────────────
+def _ensure_askpass() -> str:
+    """確保 sudo askpass 腳本存在（內容印出 ~/sudo.pwd）。回傳路徑。"""
+    p = "/tmp/askpass.sh"
+    if not os.path.exists(p):
+        with open(p, "w") as f:
+            f.write("#!/bin/sh\ncat ~/sudo.pwd\n")
+        os.chmod(p, 0o755)
+    return p
+
+
 def broadcast(payloads: list[bytes], rounds: int = 4, handles=(3, 6, 7, 8, 9)):
-    """以 sudo 執行 tools/replay_adv2.py（HCI_CHANNEL_USER 擴充廣播）。"""
+    """以 sudo 執行 tools/replay_adv2.py（HCI_CHANNEL_USER 擴充廣播）。
+    注意：本函式自己處理 sudo，呼叫端請用「一般使用者」執行，不要再加 sudo。"""
+    ask = _ensure_askpass()
     ad = os.path.join(HERE, "tools", "replay_adv2.py")
     args = " ".join(p.hex() for p in payloads)
-    cmd = f'SUDO_ASKPASS=/tmp/askpass.sh sudo -A -p \'\' python3 {ad} {args}'
+    cmd = f"SUDO_ASKPASS={ask} sudo -A -p '' python3 {ad} {args}"
     return subprocess.run(["bash", "-lc", cmd], capture_output=True, text=True)
 
 
