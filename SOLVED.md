@@ -26,9 +26,18 @@ QR "FTDSF|2|<b64>"  --AES-128-CBC(key=1a2c3b16…, iv=ftd95279527a2c3c)--> {shar
   - `seq` 每送一發 +1
 - `data`（12B）— `groupControl`：
   - 開關 `43 <pt1> <pt0> <groupId> <isOpen?brightness:0> 00 00 00 00 00 00 00`
-  - CCT  `93 <pt1> <pt0> <groupId> <brightness> 00 00 00 <wLight> <yLight> 00 00`
+  - 亮度／CCT `93 <pt1> <pt0> <groupId> <brightness> 00 00 00 <wLight> <yLight> 00 00`
 - `setSwitchControllerOnOffGroup`：`53 <pt1> <pt0> <groupId> <ctrl> <para> 00…`
 - `productType`「2ba8」→ 實機 frame 證實 `pt1=0x2a, pt0=0xa8`
+
+### ⚠️ 亮度：只能用 0x93（2026-09-24 實測）
+
+- `0x43` 的第 5 byte 官方定義為 `isOpen ? brightness : 0`，**但實機測試在燈已亮時送
+  `43 2aa8 02 ff …`（brightness=255）→ 亮度完全不變**（開/關本身有效）。
+  推測韌體只在關→開轉態才套用該欄位，或該欄位僅為舊版相容殘留。
+- 改送 **CCT 指令 `93 2aa8 02 ff 0000 00 <w> <y>`** → 亮度立即生效 ✅
+  （實測 `932aa802ff00000080800000`，亮度 255、w=128/y=128）。
+- 因此 `bright.py` 一律走 0x93；`lights.py` 僅負責開/關。
 
 ## 實機對拍（8 筆全解）
 

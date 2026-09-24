@@ -41,8 +41,13 @@ head = [ (addr>>8 & 0x0F) + 208 , seq , 3 , 0 ]
 | 用途 | 格式 |
 |---|---|
 | 開關 | `43 <pt1> <pt0> <groupId> <isOpen?brightness:0> 00 00 00 00 00 00 00` |
-| 色溫 | `93 <pt1> <pt0> <groupId> <brightness> 00 00 00 <wLight> <yLight> 00 00` |
+| 亮度／色溫 | `93 <pt1> <pt0> <groupId> <brightness> 00 00 00 <wLight> <yLight> 00 00` |
 | 群組開關 | `53 <pt1> <pt0> <groupId> <ctrl> <para> 00 …` |
+
+> ⚠️ **調亮度一定要用 `0x93`（CCT 指令）**。`0x43` 雖然欄位定義上第 5 byte 也是
+> 「isOpen ? brightness : 0」，但**實測在燈已亮的狀態下送 `0x43` + brightness 完全無效**
+> （開/關本身有效）。要改亮度請送 `0x93`，並帶上目前的 `wLight` / `yLight`。
+> 見 `bright.py`。
 
 「雙色燈」(type `2ba8`) 的 `productType` 實測為 `(pt1, pt0) = (0x2A, 0xA8)`。
 
@@ -62,7 +67,20 @@ python3 tinysmart_full.py            # 讀 tools/newqr.txt
 
 # 3) 廣播（需要 root/raw HCI）
 sudo python3 tools/replay_adv2.py <AD_HEX_1> <AD_HEX_2> ...
+
+# 4) 開關（省略房間 = 全部）
+python3 lights.py on 客廳 主臥
+python3 lights.py off
+
+# 5) 亮度 / 色溫（走 0x93 CCT 指令）
+python3 bright.py 主臥 255            # 亮度最大，中性色溫 (w=128,y=128)
+python3 bright.py 主臥 128 255 0      # 亮度128、最暖
+python3 bright.py 主臥 255 0 255      # 亮度最大、最冷
+python3 bright.py 主臥 64 --dry       # 只印 payload
 ```
+
+> `lights.py` / `bright.py` 需在專案根目錄執行，並把 `libflashsmartencode.so`
+> 放好（見下方「前置需求」）。廣播需 root，`broadcast()` 會自行 `sudo -A`。
 
 ### Python API
 
@@ -87,6 +105,8 @@ broadcast(payloads)          # 5-handle × 4 輪
 | 檔案 | 說明 |
 |---|---|
 | `tinysmart_full.py` | 完整實作（QR / API / 編解碼 / 指令 / 廣播） |
+| `lights.py` | CLI：房間 開/關 |
+| `bright.py` | CLI：房間 亮度 / 色溫（0x93 CCT） |
 | `SOLVED.md` | 完整規格書（含實機封包對拍表） |
 | `REVERSED_CHAIN.md` | App 調用鏈逆向紀錄 |
 | `RESEARCH.md` | 早期研究紀錄（雲端 API、家庭模型等） |
@@ -109,4 +129,5 @@ broadcast(payloads)          # 5-handle × 4 輪
 
 - `productType` / `head[2]` 為**產品線/協定常數**（非 QR 資料）；異型號需重新對拍
 - 目前僅以「雙色燈 (type 2ba8)」實機驗證
+- **亮度只能走 `0x93`（CCT）**：`0x43` 的 brightness 欄位在燈已亮時無效（實測 2026-09-24）
 - 加密金鑰 `meshKey` 由原廠 auth 端點取得，可能隨 App 版本/服務端變動
