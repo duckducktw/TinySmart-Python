@@ -79,7 +79,7 @@ FTDSF|<version>|<base64(ciphertext)>
 ### 2.4 實測解碼結果
 ```
 輸入 FTDSF|2|<BASE64>
-輸出 {"platCode":"flashsmart_ts","shareID":"f06c5e94-1f5c-470d-8729-8cad08674a60"}
+輸出 {"platCode":"flashsmart_ts","shareID":"<SHARE_ID>"}
 
 輸入 FTDSF|2|<BASE64>（2026-09-24 新版）
 輸出 {"platCode":"flashsmart_ts","shareID":"<SHARE_ID>"}
@@ -150,15 +150,15 @@ rooms: 全屋(0) / 客廳(1) / 主臥(2) / 衛生間(6)
 
 | 房間 | 燈具 | mac | mesh addr |
 |---|---|---|---|
-| 客廳 | 雙色燈4C:D5 | `FC:42:65:6C:XX:XX` | 1 |
-| 客廳 | 雙色燈18:5A | `FC:42:65:6C:XX:XX` | 2 |
-| 客廳 | 雙色燈22:00 | `FC:42:65:6C:XX:XX` | 3 |
-| 客廳 | 雙色燈CF:51 | `FC:42:65:6B:XX:XX` | 4 |
-| 客廳 | 雙色燈1A:75 | `FC:42:65:6C:XX:XX` | 5 |
-| 主臥 | 雙色燈3B:61 | `FC:42:65:6C:XX:XX` | 6 |
-| 主臥 | 雙色燈3B:7C | `FC:42:65:6C:XX:XX` | 7 |
-| 主臥 | 雙色燈D0:AE | `FC:42:65:6B:XX:XX` | 8 |
-| 衛生間 | 雙色燈D2:16 | `FC:42:65:6B:XX:XX` | 9 |
+| 客廳 | 雙色燈4C:D5 | `FC:42:65:6X:XX:XX` | 1 |
+| 客廳 | 雙色燈18:5A | `FC:42:65:6X:XX:XX` | 2 |
+| 客廳 | 雙色燈22:00 | `FC:42:65:6X:XX:XX` | 3 |
+| 客廳 | 雙色燈CF:51 | `FC:42:65:6X:XX:XX` | 4 |
+| 客廳 | 雙色燈1A:75 | `FC:42:65:6X:XX:XX` | 5 |
+| 主臥 | 雙色燈3B:61 | `FC:42:65:6X:XX:XX` | 6 |
+| 主臥 | 雙色燈3B:7C | `FC:42:65:6X:XX:XX` | 7 |
+| 主臥 | 雙色燈D0:AE | `FC:42:65:6X:XX:XX` | 8 |
+| 衛生間 | 雙色燈D2:16 | `FC:42:65:6X:XX:XX` | 9 |
 
 （App 顯示名稱尾碼＝MAC 末兩 bytes；`mac` 欄位尾端帶一個 `:`，需 strip）
 
@@ -275,7 +275,7 @@ python3 tinysmart_controller.py ctrl --qr … --device 18:5A --on --send     # �
 python3 tinysmart_controller.py room --qr "$(cat qr.txt)" --room 主臥 --on
 
 # 5) 擷取 App 真實 BLE 封包
-python3 blesnoop.py btsnoop_hci.log --mac FC:42:65:6C:XX:XX
+python3 blesnoop.py btsnoop_hci.log --mac FC:42:65:6X:XX:XX
 ```
 
 ### Python API

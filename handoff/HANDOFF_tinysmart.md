@@ -49,13 +49,13 @@
 `queryShareInfo`（memberId 任意非空即可，實測 seed `"1"` 可用）→ `memberInfo.shareDeviceJson`（base64 JSON）內含：
 ```
 home.bleCode = "<BLE_CODE_B64>"        → key4 = 0x<BLE_CODE_HEX>
-devices[]: {name, mac "FC:42:65:6C:XX:XX:", address=<mesh addr>, roomName, ...}
+devices[]: {name, mac "FC:42:65:6X:XX:XX:", address=<mesh addr>, roomName, ...}
 ```
 | 房間 | name | mac | addr |
 |---|---|---|---|
-| 客廳 | 雙色燈4C:D5 / 18:5A / 22:00 / CF:51 / 1A:75 | FC:42:65:6C:XX:XX / …6C:18:5A / …6C:22:00 / …6B:CF:51 / …6C:1A:75 | 1 / 2 / 3 / 4 / 5 |
-| 主臥 | 雙色燈3B:61 / 3B:7C / D0:AE | FC:42:65:6C:XX:XX / …6C:3B:7C / …6B:D0:AE | 6 / 7 / 8 |
-| 衛生間 | 雙色燈D2:16 | FC:42:65:6B:XX:XX | 9 |
+| 客廳 | 雙色燈4C:D5 / 18:5A / 22:00 / CF:51 / 1A:75 | FC:42:65:6X:XX:XX / …6C:18:5A / …6C:22:00 / …6B:CF:51 / …6C:1A:75 | 1 / 2 / 3 / 4 / 5 |
+| 主臥 | 雙色燈3B:61 / 3B:7C / D0:AE | FC:42:65:6X:XX:XX / …6C:3B:7C / …6B:D0:AE | 6 / 7 / 8 |
+| 衛生間 | 雙色燈D2:16 | FC:42:65:6X:XX:XX | 9 |
 
 - 目前使用的 QR 樣本 shareID：`<SHARE_ID>`（存於 `/tmp/newqr.txt`）
 
@@ -121,7 +121,7 @@ devices[]: {name, mac "FC:42:65:6C:XX:XX:", address=<mesh addr>, roomName, ...}
 | `adv_ext.py` | **ext adv 廣播器**（隨機位址 + legacy PDU）|
 | `snoop.py` / `adv_dump.py` / `blesnoop.py` | btsnoop 解析 |
 | `btdump2/` `btdump3/` | 已抽出的 btsnoop（含手機真實 adv 指令）|
-| `newqr.txt` | 有效 QR 字串（shareID c4bb2f8b…）|
+| `newqr.txt` | 有效 QR 字串（shareID <SHARE_ID>…）|
 | `askpass.sh` | sudo 用（＝cat ~/sudo.pwd）|
 
 ### 工具鏈（已裝）

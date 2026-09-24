@@ -2,7 +2,7 @@
 """btsnoop_hci.log 解析器 — 取出 App 在藍牙上實際送出的協議。
 
 用法:
-  python3 blesnoop.py <btsnoop_hci.log> [--mac FC:42:65:6C:XX:XX] [--writes-only]
+  python3 blesnoop.py <btsnoop_hci.log> [--mac FC:42:65:6X:XX:XX] [--writes-only]
 
 取得 log（免 root）:
   adb shell settings put secure bluetooth_hci_log 1
