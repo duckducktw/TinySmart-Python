@@ -77,10 +77,21 @@ python3 bright.py 主臥 255            # 亮度最大，中性色溫 (w=128,y=1
 python3 bright.py 主臥 128 255 0      # 亮度128、最暖
 python3 bright.py 主臥 255 0 255      # 亮度最大、最冷
 python3 bright.py 主臥 64 --dry       # 只印 payload
+python3 bright.py 全屋 200            # 全屋（會自動展開成各房間）
+
+# 6) 廣播節奏微調（預設 seqs=1 rounds=4 gap=1.0）
+python3 lights.py off 客廳 --rounds 3 --gap 0.8
 ```
 
 > `lights.py` / `bright.py` 需在專案根目錄執行，並把 `libflashsmartencode.so`
 > 放好（見下方「前置需求」）。廣播需 root，`broadcast()` 會自行 `sudo -A`。
+>
+> **房間與節奏（實機驗證，2026-09-25）**
+> - 房間：全屋 = `1`(客廳5) + `2`(主臥3) + `6`(衛生間1)。API 裡另有一個 `roomId=0`
+>   的空殼（底下 0 顆燈），**送 roomId 0 完全沒反應**，`全屋` 會自動展開成 `[1,2,6]`。
+> - 節奏：`seqs=1 rounds=4 gap=1.0` 實測有效（單房 ~7s、全屋 ~16s）。
+>   實測 `rounds=2 gap=0.3` **無效**——接收端要的是「時間拉開 ~4 秒」，
+>   不是短時間內連發。想再快請逐格測 `--rounds 3`；有燈漏掉就加 `--seqs`。
 
 ### Python API
 

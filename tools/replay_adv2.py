@@ -8,7 +8,7 @@ App 行為：對 handle {3,6,7,8,9} 各做 SetExtAdvParams→SetRandAddr→SetEx
 import socket, struct, sys, time, subprocess, random
 
 HANDLES = [0x03, 0x06, 0x07, 0x08, 0x09]
-ROUNDS = 4
+ROUNDS = 4          # 預設 4 輪（與 App 實機一致）；可用 --rounds N 覆寫
 GAP = 1.0
 
 def open_user(dev=0):
@@ -42,9 +42,22 @@ def arm(sock, h, payload):
     cmd(sock, 0x2039, bytes([0x01, 0x01, h]) + struct.pack("<H", 0) + bytes([0x00]))
 
 def main():
-    payloads = [bytes.fromhex(x) for x in sys.argv[1:]]
+    global ROUNDS, GAP
+    argv = sys.argv[1:]
+    rounds, gap = ROUNDS, GAP
+    payloads = []
+    i = 0
+    while i < len(argv):
+        a = argv[i]
+        if a == "--rounds" and i + 1 < len(argv):
+            rounds = int(argv[i + 1]); i += 2; continue
+        if a == "--gap" and i + 1 < len(argv):
+            gap = float(argv[i + 1]); i += 2; continue
+        payloads.append(bytes.fromhex(a)); i += 1
+    ROUNDS, GAP = rounds, gap
     if not payloads:
         print("need payloads"); return
+    print(f"rounds={ROUNDS} gap={GAP} payloads={len(payloads)}", flush=True)
     subprocess.run(["hciconfig", "hci0", "down"], check=False); time.sleep(0.5)
     sock = None
     try:

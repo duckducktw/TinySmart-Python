@@ -197,13 +197,17 @@ def _ensure_askpass() -> str:
     return p
 
 
-def broadcast(payloads: list[bytes], rounds: int = 4, handles=(3, 6, 7, 8, 9)):
+def broadcast(payloads: list[bytes], rounds: int = 4, handles=(3, 6, 7, 8, 9),
+              gap: float | None = None):
     """以 sudo 執行 tools/replay_adv2.py（HCI_CHANNEL_USER 擴充廣播）。
+    一次呼叫即把所有 payload 送完：同一輪內所有 payload 連續送出，
+    因此多房間會「同步」收到指令（不要在外層切片分批跑，那樣會變慢又不同步）。
     注意：本函式自己處理 sudo，呼叫端請用「一般使用者」執行，不要再加 sudo。"""
     ask = _ensure_askpass()
     ad = os.path.join(HERE, "tools", "replay_adv2.py")
     args = " ".join(p.hex() for p in payloads)
-    cmd = f"SUDO_ASKPASS={ask} sudo -A -p '' python3 {ad} {args}"
+    opts = f"--rounds {int(rounds)}" + (f" --gap {gap}" if gap is not None else "")
+    cmd = f"SUDO_ASKPASS={ask} sudo -A -p '' python3 {ad} {opts} {args}"
     return subprocess.run(["bash", "-lc", cmd], capture_output=True, text=True)
 
 
